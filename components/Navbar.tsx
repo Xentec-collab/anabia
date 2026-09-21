@@ -53,22 +53,22 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* Wordmark Left - 30px mobile / 34px desktop */}
+            {/* Wordmark Left - 26px mobile / 28px desktop */}
             <Link
               href="/"
-              className="font-serif text-[30px] md:text-[34px] leading-none tracking-[-0.02em] hover:tracking-normal select-none text-[var(--ink)] transition-all duration-300"
+              className="font-serif text-[26px] md:text-[28px] leading-none select-none text-[var(--ink)] hover:opacity-80 transition-opacity"
             >
               Anabia
             </Link>
           </div>
 
-          {/* Links Center - Perfectly Centered on Desktop with Smooth Underline Slide */}
+          {/* Links Center */}
           <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             <Link
               href="/"
-              className={`nav-link-animated text-[13px] py-1 ${
+              className={`text-[13px] transition-colors pb-0.5 ${
                 pathname === "/"
-                  ? "text-[var(--ink)] active"
+                  ? "text-[var(--ink)] border-b border-[var(--ink)]"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
@@ -76,9 +76,9 @@ export default function Navbar() {
             </Link>
             <Link
               href="/about"
-              className={`nav-link-animated text-[13px] py-1 ${
+              className={`text-[13px] transition-colors pb-0.5 ${
                 pathname === "/about"
-                  ? "text-[var(--ink)] active"
+                  ? "text-[var(--ink)] border-b border-[var(--ink)]"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
@@ -86,9 +86,9 @@ export default function Navbar() {
             </Link>
             <Link
               href="/journal"
-              className={`nav-link-animated text-[13px] py-1 ${
+              className={`text-[13px] transition-colors pb-0.5 ${
                 pathname.startsWith("/journal")
-                  ? "text-[var(--ink)] active"
+                  ? "text-[var(--ink)] border-b border-[var(--ink)]"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
@@ -102,7 +102,7 @@ export default function Navbar() {
               type="button"
               aria-label="Search catalog"
               onClick={() => setSearchOpen(!searchOpen)}
-              className="text-[var(--ink)] hover:text-[var(--muted)] hover:scale-110 active:scale-95 transition-all duration-200 p-1 flex items-center justify-center cursor-pointer select-none"
+              className="text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all p-1 flex items-center justify-center cursor-pointer select-none"
             >
               <svg
                 className="w-5 h-5"
@@ -122,7 +122,7 @@ export default function Navbar() {
             <Link
               href="/cart"
               aria-label="Shopping bag"
-              className="relative text-[var(--ink)] hover:text-[var(--muted)] hover:scale-110 active:scale-95 transition-all duration-200 p-1 flex items-center justify-center select-none"
+              className="relative text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all p-1 flex items-center justify-center select-none"
             >
               <svg
                 className="w-5 h-5"

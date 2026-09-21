@@ -72,10 +72,7 @@ export default function ProductCard(props: ProductCardProps) {
   };
 
   return (
-    <article
-      style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}
-      className="relative p-2 bg-transparent border border-transparent transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[var(--ink)] rounded-none group animate-drift-up"
-    >
+    <article className="flex flex-col group">
       {/* 4:5 Aspect Frame */}
       <div className="aspect-[4/5] w-full bg-[#F2F1EF] overflow-hidden relative flex items-center justify-center rounded-none">
         <Link
@@ -99,7 +96,7 @@ export default function ProductCard(props: ProductCardProps) {
               placeholder="blur"
               blurDataURL={SOLID_BLUR_DATA_URL}
               onError={() => setImageError(true)}
-              className="object-cover rounded-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]"
+              className="object-cover rounded-none transition-transform duration-500 ease-out group-hover:scale-105"
             />
           )}
         </Link>
@@ -118,14 +115,12 @@ export default function ProductCard(props: ProductCardProps) {
           </span>
         )}
 
-        {/* Hover "Add to cart" Button - tactile active response, visible on mobile */}
+        {/* Hover "Add to cart" Button */}
         {!isOutOfStock && (
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`absolute bottom-3 left-3 right-3 z-10 py-2 text-center text-[13px] bg-[var(--surface)] text-[var(--ink)] border border-[var(--line)] opacity-95 md:opacity-0 md:group-hover:opacity-100 font-normal rounded-none hover:bg-[var(--surface)] hover:border-[var(--ink)] active:scale-[0.97] active:bg-[var(--ink)] active:text-[var(--surface)] transition-all duration-300 md:translate-y-2 md:group-hover:translate-y-0 cursor-pointer select-none shadow-xs ${
-              added ? "animate-subtle-pulse border-[var(--ink)]" : ""
-            }`}
+            className="absolute bottom-3 left-3 right-3 z-10 py-2.5 text-center text-[13px] bg-[var(--surface)] text-[var(--ink)] border border-[var(--line)] opacity-95 md:opacity-0 md:group-hover:opacity-100 font-normal rounded-none hover:border-[var(--ink)] active:scale-[0.98] transition-all duration-150 cursor-pointer select-none"
           >
             {added ? "Added to bag" : "Add to cart"}
           </button>
@@ -136,7 +131,7 @@ export default function ProductCard(props: ProductCardProps) {
       <Link
         href={`/product/${id}`}
         prefetch={false}
-        className="pt-3 pb-1 flex flex-col gap-1 block cursor-pointer active:opacity-80 transition-opacity duration-100"
+        className="pt-3 pb-1 flex flex-col gap-1 block cursor-pointer"
       >
         <h2 className="text-[14px] text-[var(--ink)] font-normal truncate group-hover:underline underline-offset-2">
           {name}

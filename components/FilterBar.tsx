@@ -44,10 +44,10 @@ export default function FilterBar({
                 key={cat.value}
                 type="button"
                 onClick={() => onSelectCategory(cat.value)}
-                className={`text-[13px] px-4 py-1.5 rounded-none font-normal transition-all duration-200 ease-out cursor-pointer select-none active:scale-[0.97] hover:-translate-y-0.5 ${
+                className={`text-[13px] px-4 py-1.5 rounded-none font-normal transition-colors duration-150 ease-out cursor-pointer select-none active:scale-[0.98] ${
                   isActive
-                    ? "bg-[var(--ink)] text-[var(--surface)] shadow-xs"
-                    : "bg-[var(--ghost)] text-[var(--ink)] hover:bg-[var(--line)] hover:shadow-xs"
+                    ? "bg-[var(--ink)] text-[var(--surface)] font-medium"
+                    : "bg-[var(--ghost)] text-[var(--ink)] hover:bg-[var(--line)]"
                 }`}
               >
                 {cat.label}

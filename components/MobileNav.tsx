@@ -73,7 +73,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
         <div className="flex items-center justify-between h-14 px-6 border-b border-[var(--line)]">
           <Link 
             href="/" 
-            className="font-serif text-[30px] leading-none tracking-[-0.02em] select-none text-[var(--ink)]"
+            className="font-serif text-[26px] leading-none select-none text-[var(--ink)]"
             onClick={onClose}
           >
             Anabia

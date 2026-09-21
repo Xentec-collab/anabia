@@ -43,10 +43,10 @@ export default async function HomePage() {
     <div className="flex flex-col w-full">
       {/* Editorial Hero Statement */}
       <section className="h-[260px] flex items-center justify-center flex-col text-center px-4">
-        <h1 className="font-serif text-[36px] md:text-[40px] text-[var(--ink)] max-w-[560px] leading-tight font-normal animate-drift-up">
+        <h1 className="font-serif text-[36px] md:text-[40px] text-[var(--ink)] max-w-[560px] leading-tight font-normal">
           Considered things for considered people
         </h1>
-        <div className="w-12 h-[1px] bg-[var(--line)] mt-6 mx-auto animate-hero-divider" />
+        <div className="w-12 h-[1px] bg-[var(--line)] mt-6 mx-auto" />
       </section>
 
       {/* Shop Catalog with Instant Filtering & Sorting */}
