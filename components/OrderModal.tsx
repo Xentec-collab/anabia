@@ -162,13 +162,13 @@ export default function OrderModal({ isOpen, onClose }: OrderModalProps) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-modal-backdrop"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[var(--surface)] border border-[var(--line)] p-8 relative">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[var(--surface)] border border-[var(--line)] p-8 relative animate-modal-content">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--muted)] hover:text-[var(--ink)]"
+          className="absolute top-4 right-4 text-[var(--muted)] hover:text-[var(--ink)] active:scale-95 transition-all p-1"
           title="Close"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

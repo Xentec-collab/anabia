@@ -34,7 +34,7 @@ function CartRowComponent({ item }: CartRowProps) {
   const formattedRowTotal = `₹${(item.price * item.quantity).toLocaleString("en-IN")}`;
 
   return (
-    <article className="py-6 flex gap-6 items-center justify-between">
+    <article className="py-6 flex gap-6 items-center justify-between animate-fade-in">
       {/* Product Image & Details */}
       <div className="flex items-center gap-5 min-w-0">
         <div className="w-[64px] h-[80px] flex-shrink-0 bg-[var(--ghost)] overflow-hidden border border-[var(--line)]/50 relative">
@@ -71,10 +71,10 @@ function CartRowComponent({ item }: CartRowProps) {
             aria-label="Decrease quantity"
             onClick={handleDecrease}
             disabled={item.quantity <= 1}
-            className={`w-8 h-full flex items-center justify-center text-[var(--ink)] transition-all duration-75 ${
+            className={`w-8 h-full flex items-center justify-center text-[var(--ink)] transition-all duration-150 ${
               item.quantity <= 1
                 ? "opacity-30 cursor-not-allowed"
-                : "hover:bg-[var(--ghost)] active:scale-90 active:bg-[var(--line)] cursor-pointer"
+                : "hover:bg-[var(--ghost)] active:scale-95 active:bg-[var(--line)] cursor-pointer"
             }`}
           >
             <svg
@@ -95,10 +95,10 @@ function CartRowComponent({ item }: CartRowProps) {
             aria-label="Increase quantity"
             onClick={handleIncrease}
             disabled={item.quantity >= 10}
-            className={`w-8 h-full flex items-center justify-center text-[var(--ink)] transition-all duration-75 ${
+            className={`w-8 h-full flex items-center justify-center text-[var(--ink)] transition-all duration-150 ${
               item.quantity >= 10
                 ? "opacity-30 cursor-not-allowed"
-                : "hover:bg-[var(--ghost)] active:scale-90 active:bg-[var(--line)] cursor-pointer"
+                : "hover:bg-[var(--ghost)] active:scale-95 active:bg-[var(--line)] cursor-pointer"
             }`}
           >
             <svg
@@ -120,7 +120,7 @@ function CartRowComponent({ item }: CartRowProps) {
         <button
           type="button"
           onClick={handleRemove}
-          className="text-[12px] text-[var(--muted)] hover:text-[var(--ink)] active:opacity-60 transition-all duration-75 bg-transparent border-0 cursor-pointer p-1 underline-offset-4 hover:underline"
+          className="text-[12px] text-[var(--muted)] hover:text-[var(--ink)] active:opacity-60 transition-all duration-150 bg-transparent border-0 cursor-pointer p-1 underline-offset-4 hover:underline"
         >
           Remove
         </button>

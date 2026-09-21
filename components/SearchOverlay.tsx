@@ -101,11 +101,11 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   return (
     <>
       <div 
-        className="fixed inset-0 top-14 z-40 bg-black/20 transition-opacity" 
+        className="fixed inset-0 top-14 z-40 bg-black/20 animate-modal-backdrop" 
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed top-14 left-0 right-0 z-40 bg-[var(--surface)] border-b border-[var(--line)] shadow-sm">
+      <div className="fixed top-14 left-0 right-0 z-40 bg-[var(--surface)] border-b border-[var(--line)] shadow-sm animate-search-down">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="relative flex items-center">
             <svg className="absolute left-0 w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -121,7 +121,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             />
             <button 
               onClick={onClose}
-              className="absolute right-0 p-2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
+              className="absolute right-0 p-1 -mr-1 text-[var(--muted)] hover:text-[var(--ink)] active:scale-95 transition-all"
               aria-label="Close search"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

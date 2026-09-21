@@ -44,9 +44,9 @@ export default function FilterBar({
                 key={cat.value}
                 type="button"
                 onClick={() => onSelectCategory(cat.value)}
-                className={`text-[13px] px-4 py-1.5 rounded-none transition-all duration-100 ease-out cursor-pointer select-none active:scale-[0.96] active:opacity-90 ${
+                className={`text-[13px] px-4 py-1.5 rounded-none font-normal transition-colors duration-200 ease-out cursor-pointer select-none active:scale-[0.97] ${
                   isActive
-                    ? "bg-[var(--ink)] text-[var(--surface)] font-medium shadow-xs"
+                    ? "bg-[var(--ink)] text-[var(--surface)] shadow-xs"
                     : "bg-[var(--ghost)] text-[var(--ink)] hover:bg-[var(--line)]"
                 }`}
               >

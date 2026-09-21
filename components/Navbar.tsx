@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCartItemCount } from "@/store/cartStore";
@@ -12,18 +12,31 @@ export default function Navbar() {
   const itemCount = useCartItemCount();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Track cart item count increments for micro-interaction bump
+  const prevCountRef = useRef(itemCount);
+  const [badgeBump, setBadgeBump] = useState(false);
+
+  useEffect(() => {
+    if (itemCount > prevCountRef.current) {
+      setBadgeBump(true);
+      const timer = setTimeout(() => setBadgeBump(false), 450);
+      return () => clearTimeout(timer);
+    }
+    prevCountRef.current = itemCount;
+  }, [itemCount]);
 
   return (
     <>
       <header className="fixed top-0 left-0 right-0 w-full z-50 bg-[var(--bg)]/90 backdrop-blur-md border-b border-[var(--line)]">
-        <div className="h-14 max-w-6xl mx-auto px-6 flex items-center justify-between">
-          {/* Hamburger (mobile only) */}
+        <div className="h-14 max-w-6xl mx-auto px-6 flex items-center justify-between relative">
+          {/* Left: Hamburger (mobile) + Wordmark */}
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Open menu"
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden text-[var(--ink)] hover:text-[var(--muted)] active:scale-90 transition-all duration-100 p-1 flex items-center justify-center cursor-pointer select-none"
+              className="md:hidden text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all duration-150 p-1 flex items-center justify-center cursor-pointer select-none"
             >
               <svg
                 className="w-5 h-5"
@@ -40,56 +53,65 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* Wordmark Left */}
+            {/* Wordmark Left - 26px mobile / 28px desktop */}
             <Link
               href="/"
-              className="font-serif text-[22px] tracking-normal select-none text-[var(--ink)]"
+              className="font-serif text-[26px] md:text-[28px] leading-none tracking-[-0.01em] select-none text-[var(--ink)] hover:opacity-85 transition-opacity duration-200"
             >
               Anabia
             </Link>
           </div>
 
-          {/* Links Center */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* Links Center - Perfectly Centered on Desktop */}
+          <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             <Link
               href="/"
-              className={`text-[13px] transition-colors pb-0.5 ${
+              className={`relative text-[13px] py-1 transition-colors duration-200 ${
                 pathname === "/"
-                  ? "text-[var(--ink)] border-b border-[var(--ink)]"
+                  ? "text-[var(--ink)]"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
               Shop
+              {pathname === "/" && (
+                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[var(--ink)] animate-fade-in" />
+              )}
             </Link>
             <Link
               href="/about"
-              className={`text-[13px] transition-colors pb-0.5 ${
+              className={`relative text-[13px] py-1 transition-colors duration-200 ${
                 pathname === "/about"
-                  ? "text-[var(--ink)] border-b border-[var(--ink)]"
+                  ? "text-[var(--ink)]"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
               About
+              {pathname === "/about" && (
+                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[var(--ink)] animate-fade-in" />
+              )}
             </Link>
             <Link
               href="/journal"
-              className={`text-[13px] transition-colors pb-0.5 ${
+              className={`relative text-[13px] py-1 transition-colors duration-200 ${
                 pathname.startsWith("/journal")
-                  ? "text-[var(--ink)] border-b border-[var(--ink)]"
+                  ? "text-[var(--ink)]"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
               Journal
+              {pathname.startsWith("/journal") && (
+                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[var(--ink)] animate-fade-in" />
+              )}
             </Link>
           </nav>
 
-          {/* Right: Search + Cart Badge (No avatar) */}
+          {/* Right: Search + Cart Badge */}
           <div className="flex items-center gap-4">
             <button
               type="button"
               aria-label="Search catalog"
               onClick={() => setSearchOpen(!searchOpen)}
-              className="text-[var(--ink)] hover:text-[var(--muted)] active:scale-90 transition-all duration-100 p-1 flex items-center justify-center cursor-pointer select-none"
+              className="text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all duration-150 p-1 flex items-center justify-center cursor-pointer select-none"
             >
               <svg
                 className="w-5 h-5"
@@ -109,7 +131,7 @@ export default function Navbar() {
             <Link
               href="/cart"
               aria-label="Shopping bag"
-              className="relative text-[var(--ink)] hover:text-[var(--muted)] active:scale-90 transition-all duration-100 p-1 flex items-center justify-center select-none"
+              className="relative text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all duration-150 p-1 flex items-center justify-center select-none"
             >
               <svg
                 className="w-5 h-5"
@@ -125,7 +147,12 @@ export default function Navbar() {
                 />
               </svg>
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--ink)] text-[var(--surface)] text-[10px] leading-none flex items-center justify-center font-medium">
+                <span
+                  key={itemCount}
+                  className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--ink)] text-[var(--surface)] text-[10px] leading-none flex items-center justify-center font-medium animate-badge-in ${
+                    badgeBump ? "animate-badge-bump" : ""
+                  }`}
+                >
                   {itemCount}
                 </span>
               )}

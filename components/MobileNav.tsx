@@ -66,21 +66,21 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
       {/* Drawer */}
       <div 
-        className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-[var(--bg)] border-r border-[var(--line)] shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-[var(--bg)] border-r border-[var(--line)] shadow-xl transform transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-6 border-b border-[var(--line)]">
+        <div className="flex items-center justify-between h-14 px-6 border-b border-[var(--line)]">
           <Link 
             href="/" 
-            className="font-serif text-[22px] tracking-tight text-[var(--ink)]"
+            className="font-serif text-[26px] leading-none tracking-[-0.01em] select-none text-[var(--ink)]"
             onClick={onClose}
           >
             Anabia
           </Link>
           <button 
             onClick={onClose}
-            className="p-2 -mr-2 text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
+            className="p-1 -mr-1 text-[var(--muted)] hover:text-[var(--ink)] active:scale-95 transition-all"
             aria-label="Close menu"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -91,14 +91,17 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="flex flex-col">
-            {links.map((link) => {
+            {links.map((link, idx) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={onClose}
-                  className={`px-6 py-3 text-[15px] transition-colors border-l-2 ${
+                  style={{
+                    transitionDelay: isOpen ? `${idx * 40}ms` : "0ms",
+                  }}
+                  className={`px-6 py-3 text-[15px] transition-all duration-200 border-l-2 ${
                     isActive 
                       ? "text-[var(--ink)] border-[var(--ink)] font-medium" 
                       : "text-[var(--muted)] border-transparent hover:text-[var(--ink)]"
@@ -112,7 +115,10 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <Link
               href="/cart"
               onClick={onClose}
-              className={`px-6 py-3 text-[15px] transition-colors border-l-2 flex items-center justify-between mt-4 ${
+              style={{
+                transitionDelay: isOpen ? `${links.length * 40}ms` : "0ms",
+              }}
+              className={`px-6 py-3 text-[15px] transition-all duration-200 border-l-2 flex items-center justify-between mt-4 ${
                 pathname === "/cart"
                   ? "text-[var(--ink)] border-[var(--ink)] font-medium" 
                   : "text-[var(--muted)] border-transparent hover:text-[var(--ink)]"
