@@ -53,55 +53,46 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* Wordmark Left - 26px mobile / 28px desktop */}
+            {/* Wordmark Left - 30px mobile / 34px desktop */}
             <Link
               href="/"
-              className="font-serif text-[26px] md:text-[28px] leading-none tracking-[-0.01em] select-none text-[var(--ink)] hover:opacity-85 transition-opacity duration-200"
+              className="font-serif text-[30px] md:text-[34px] leading-none tracking-[-0.02em] hover:tracking-normal select-none text-[var(--ink)] transition-all duration-300"
             >
               Anabia
             </Link>
           </div>
 
-          {/* Links Center - Perfectly Centered on Desktop */}
+          {/* Links Center - Perfectly Centered on Desktop with Smooth Underline Slide */}
           <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             <Link
               href="/"
-              className={`relative text-[13px] py-1 transition-colors duration-200 ${
+              className={`nav-link-animated text-[13px] py-1 ${
                 pathname === "/"
-                  ? "text-[var(--ink)]"
+                  ? "text-[var(--ink)] active"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
               Shop
-              {pathname === "/" && (
-                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[var(--ink)] animate-fade-in" />
-              )}
             </Link>
             <Link
               href="/about"
-              className={`relative text-[13px] py-1 transition-colors duration-200 ${
+              className={`nav-link-animated text-[13px] py-1 ${
                 pathname === "/about"
-                  ? "text-[var(--ink)]"
+                  ? "text-[var(--ink)] active"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
               About
-              {pathname === "/about" && (
-                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[var(--ink)] animate-fade-in" />
-              )}
             </Link>
             <Link
               href="/journal"
-              className={`relative text-[13px] py-1 transition-colors duration-200 ${
+              className={`nav-link-animated text-[13px] py-1 ${
                 pathname.startsWith("/journal")
-                  ? "text-[var(--ink)]"
+                  ? "text-[var(--ink)] active"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
               Journal
-              {pathname.startsWith("/journal") && (
-                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[var(--ink)] animate-fade-in" />
-              )}
             </Link>
           </nav>
 
@@ -111,7 +102,7 @@ export default function Navbar() {
               type="button"
               aria-label="Search catalog"
               onClick={() => setSearchOpen(!searchOpen)}
-              className="text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all duration-150 p-1 flex items-center justify-center cursor-pointer select-none"
+              className="text-[var(--ink)] hover:text-[var(--muted)] hover:scale-110 active:scale-95 transition-all duration-200 p-1 flex items-center justify-center cursor-pointer select-none"
             >
               <svg
                 className="w-5 h-5"
@@ -131,7 +122,7 @@ export default function Navbar() {
             <Link
               href="/cart"
               aria-label="Shopping bag"
-              className="relative text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all duration-150 p-1 flex items-center justify-center select-none"
+              className="relative text-[var(--ink)] hover:text-[var(--muted)] hover:scale-110 active:scale-95 transition-all duration-200 p-1 flex items-center justify-center select-none"
             >
               <svg
                 className="w-5 h-5"

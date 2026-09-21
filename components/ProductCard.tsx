@@ -74,7 +74,7 @@ export default function ProductCard(props: ProductCardProps) {
   return (
     <article
       style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}
-      className="relative p-2 bg-transparent border border-transparent transition-colors duration-200 ease-out hover:border-[var(--ink)] rounded-none group animate-drift-up"
+      className="relative p-2 bg-transparent border border-transparent transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:border-[var(--ink)] rounded-none group animate-drift-up"
     >
       {/* 4:5 Aspect Frame */}
       <div className="aspect-[4/5] w-full bg-[#F2F1EF] overflow-hidden relative flex items-center justify-center rounded-none">
@@ -99,7 +99,7 @@ export default function ProductCard(props: ProductCardProps) {
               placeholder="blur"
               blurDataURL={SOLID_BLUR_DATA_URL}
               onError={() => setImageError(true)}
-              className="object-cover rounded-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.035]"
+              className="object-cover rounded-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]"
             />
           )}
         </Link>
