@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import type { CartItem } from "@/lib/supabase";
@@ -11,6 +11,11 @@ interface CartRowProps {
 }
 
 function CartRowComponent({ item }: CartRowProps) {
+  const [imageError, setImageError] = useState(false);
+  const isDirectCdn = Boolean(
+    item.image_url && (item.image_url.includes("ibb.co") || item.image_url.includes("googleusercontent.com"))
+  );
+
   const updateQty = useCartStore((state) => state.updateQty);
   const removeItem = useCartStore((state) => state.removeItem);
 
@@ -38,17 +43,23 @@ function CartRowComponent({ item }: CartRowProps) {
       {/* Product Image & Details */}
       <div className="flex items-center gap-5 min-w-0">
         <div
-          className="w-[64px] h-[80px] flex-shrink-0 bg-[var(--ghost)] overflow-hidden border border-[var(--line)]/50 relative"
+          className="w-[64px] h-[80px] flex-shrink-0 bg-[var(--ghost)] overflow-hidden border border-[var(--line)]/50 relative flex items-center justify-center"
           style={{ position: "relative", width: 64, height: 80, overflow: "hidden" }}
         >
-          <Image
-            src={item.image_url}
-            alt={item.name}
-            width={64}
-            height={80}
-            className="w-full h-full object-cover object-center"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          {imageError || !item.image_url ? (
+            <span className="text-[10px] text-[var(--muted)]">No img</span>
+          ) : (
+            <Image
+              src={item.image_url}
+              alt={item.name}
+              width={64}
+              height={80}
+              unoptimized={isDirectCdn}
+              onError={() => setImageError(true)}
+              className="w-full h-full object-cover object-center"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )}
         </div>
 
         <div className="flex flex-col min-w-0">

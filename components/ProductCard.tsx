@@ -37,6 +37,22 @@ export default function ProductCard(props: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem);
   const [added, setAdded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [fallbackDirect, setFallbackDirect] = useState(false);
+
+  // Directly load images from external CDNs (like ImgBB) without serverless proxy delay
+  const isDirectCdn = Boolean(
+    image_url && (image_url.includes("ibb.co") || image_url.includes("googleusercontent.com"))
+  );
+
+  const handleImageError = () => {
+    if (!fallbackDirect && !isDirectCdn) {
+      // If serverless optimization timed out or failed, retry directly in browser
+      setFallbackDirect(true);
+    } else {
+      // Direct load also failed or URL is invalid
+      setImageError(true);
+    }
+  };
 
   const numericPrice =
     typeof price === "number"
@@ -96,9 +112,10 @@ export default function ProductCard(props: ProductCardProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 384px"
               priority={isPriority}
               loading={isPriority ? "eager" : "lazy"}
-              placeholder="blur"
+              placeholder={fallbackDirect ? undefined : "blur"}
               blurDataURL={SOLID_BLUR_DATA_URL}
-              onError={() => setImageError(true)}
+              unoptimized={isDirectCdn || fallbackDirect}
+              onError={handleImageError}
               className="object-cover rounded-none transition-transform duration-500 ease-out group-hover:scale-105"
             />
           )}

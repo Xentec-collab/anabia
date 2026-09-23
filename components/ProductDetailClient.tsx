@@ -17,8 +17,24 @@ const SOLID_BLUR_DATA_URL =
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [imageError, setImageError] = useState(false);
+  const [fallbackDirect, setFallbackDirect] = useState(false);
   const [added, setAdded] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+
+  // Directly load images from external CDNs (like ImgBB) without serverless proxy delay
+  const isDirectCdn = Boolean(
+    product.image_url && (product.image_url.includes("ibb.co") || product.image_url.includes("googleusercontent.com"))
+  );
+
+  const handleImageError = () => {
+    if (!fallbackDirect && !isDirectCdn) {
+      // If serverless optimization timed out or failed, retry directly in browser
+      setFallbackDirect(true);
+    } else {
+      // Direct load also failed or URL is invalid
+      setImageError(true);
+    }
+  };
 
   const addItem = useCartStore((state) => state.addItem);
 
@@ -103,10 +119,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   alt={product.name}
                   fill
                   priority
-                  placeholder="blur"
+                  placeholder={fallbackDirect ? undefined : "blur"}
                   blurDataURL={SOLID_BLUR_DATA_URL}
                   sizes="(max-width: 1024px) 100vw, 660px"
-                  onError={() => setImageError(true)}
+                  unoptimized={isDirectCdn || fallbackDirect}
+                  onError={handleImageError}
                   className="object-cover object-center"
                 />
               )}

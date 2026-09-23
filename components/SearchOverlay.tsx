@@ -160,6 +160,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                           alt={product.name}
                           width={40}
                           height={50}
+                          unoptimized={Boolean(product.image_url?.includes("ibb.co"))}
                           className="w-full h-full object-cover"
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
