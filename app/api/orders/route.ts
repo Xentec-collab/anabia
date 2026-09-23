@@ -48,7 +48,8 @@ const orderSchema = z.object({
     .nullable(),
   address: z
     .string()
-    .min(10, "Please enter a delivery address (min 10 characters)"),
+    .optional()
+    .nullable(),
   city: z.string().min(2, "City / State is required"),
   company_name: z
     .string()
@@ -60,11 +61,11 @@ const orderSchema = z.object({
     .max(1000, "Notes cannot exceed 1000 characters")
     .optional()
     .nullable(),
-  items: z.array(orderItemSchema).min(1, "Cart cannot be empty"),
+  items: z.array(orderItemSchema).default([]),
   subtotal: z
     .number()
-    .int("Subtotal must be an integer")
-    .positive("Subtotal must be a positive integer"),
+    .min(0, "Subtotal must be non-negative"),
+  status: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -136,6 +137,14 @@ export async function POST(request: NextRequest) {
       subtotal,
     } = parseResult.data;
 
+    const isRestock = body.status === "restock-inquiry";
+    if (!isRestock && (!address || address.trim().length < 10)) {
+      return NextResponse.json(
+        { error: "Please enter a delivery address (min 10 characters)" },
+        { status: 400 }
+      );
+    }
+
     // 2. Sanitize email headers (prevent CRLF injection)
     const safeCustomerName = sanitizeHeader(customer_name);
     const safeCompanyName = sanitizeHeader(company_name);
@@ -178,6 +187,7 @@ export async function POST(request: NextRequest) {
 
     // Detect price tampering (allow 0 difference or reject if client subtotal differs by > 1)
     if (
+      !isRestock &&
       calculatedSubtotal > 0 &&
       Math.abs(calculatedSubtotal - subtotal) > 1
     ) {
@@ -194,8 +204,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const numericSubtotal =
-      calculatedSubtotal > 0 ? calculatedSubtotal : Math.round(Number(subtotal)) || 0;
+    const numericSubtotal = isRestock
+      ? 0
+      : calculatedSubtotal > 0
+      ? calculatedSubtotal
+      : Math.round(Number(subtotal)) || 0;
 
     // 4. Save to Supabase
     const { data: dbData, error: dbError } = await supabase
@@ -205,12 +218,12 @@ export async function POST(request: NextRequest) {
         company_name: safeCompanyName || null,
         phone,
         email: email || null,
-        address,
+        address: isRestock ? (address || "Restock Inquiry - Address Not Required") : address,
         city,
         notes: notes || null,
         items: validatedItems, // verified item prices
         subtotal: numericSubtotal,
-        status: "new",
+        status: isRestock ? "restock-inquiry" : (body.status || "new"),
       })
       .select("id, created_at")
       .maybeSingle();
@@ -237,7 +250,7 @@ export async function POST(request: NextRequest) {
         customerName: safeCustomerName,
         companyName: safeCompanyName || undefined,
         phone,
-        address,
+        address: address || undefined,
         city,
         notes: notes || undefined,
         items: items.map((i) => ({
@@ -475,7 +488,9 @@ export async function POST(request: NextRequest) {
         const { error: resendError } = await resend.emails.send({
           from: senderEmail,
           to: [clientEmail],
-          subject: `Order ${orderRef} — ${safeCustomerName} — ${formattedTotal}`,
+          subject: isRestock
+            ? `⚠️ Restock Inquiry — ${safeCustomerName} — ${items[0]?.name || "Catalog Product"}`
+            : `Order ${orderRef} — ${safeCustomerName} — ${formattedTotal}`,
           html: htmlContent,
           attachments,
         });

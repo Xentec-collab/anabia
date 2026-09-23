@@ -6,6 +6,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import type { Product } from "@/lib/supabase";
 import { useCartStore } from "@/store/cartStore";
+import OrderModal from "@/components/OrderModal";
 
 interface ProductDetailClientProps {
   product: Product;
@@ -17,6 +18,7 @@ const SOLID_BLUR_DATA_URL =
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [imageError, setImageError] = useState(false);
   const [added, setAdded] = useState(false);
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
 
@@ -28,7 +30,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   if (isOutOfStock) {
     stockStatusDot = "bg-red-600";
-    stockStatusText = "Out of stock";
+    stockStatusText = "Currently out of stock";
   } else if (isLowStock) {
     stockStatusDot = "bg-amber-500";
     stockStatusText = `Only ${product.stock} left`;
@@ -162,19 +164,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* Add to Cart CTA */}
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`w-full h-[48px] text-[14px] font-normal rounded-none flex items-center justify-center gap-2 transition-colors duration-150 select-none ${
-                isOutOfStock
-                  ? "bg-[var(--line)] text-[var(--muted)] cursor-not-allowed"
-                  : "bg-[var(--ink)] text-[var(--surface)] hover:bg-[var(--accent)] cursor-pointer"
-              }`}
-            >
-              <span>{isOutOfStock ? "Out of stock" : added ? "Added to bag" : "Add to cart"}</span>
-              {!isOutOfStock && (
+            {/* Add to Cart or Notify Me CTA */}
+            {isOutOfStock ? (
+              <button
+                type="button"
+                onClick={() => setNotifyModalOpen(true)}
+                className="w-full h-[48px] text-[14px] font-normal rounded-none flex items-center justify-center gap-2 border border-[var(--ink)] text-[var(--ink)] bg-transparent hover:bg-[var(--ink)] hover:text-[var(--surface)] transition-colors duration-150 select-none cursor-pointer"
+              >
+                Notify Me
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="w-full h-[48px] text-[14px] font-normal rounded-none flex items-center justify-center gap-2 bg-[var(--ink)] text-[var(--surface)] hover:bg-[var(--accent)] transition-colors duration-150 select-none cursor-pointer"
+              >
+                <span>{added ? "Added to bag" : "Add to cart"}</span>
                 <svg
                   className="w-4 h-4"
                   fill="none"
@@ -188,8 +193,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25c-.67 0-1.19-.578-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"
                   />
                 </svg>
-              )}
-            </button>
+              </button>
+            )}
 
             {/* Minimal Editorial Care Note */}
             <div className="mt-10 pt-6 border-t border-[var(--line)] flex flex-col space-y-3 text-[12px] text-[var(--muted)]">
@@ -209,6 +214,15 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           </div>
         </div>
       </div>
+
+      {/* Restock Notification Modal */}
+      <OrderModal
+        isOpen={notifyModalOpen}
+        onClose={() => setNotifyModalOpen(false)}
+        mode="restock"
+        restockProduct={{ id: product.id, name: product.name }}
+        initialNotes={`Interested in: ${product.name} — please call when restocked`}
+      />
     </div>
   );
 }

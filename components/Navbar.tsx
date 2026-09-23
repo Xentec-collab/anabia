@@ -39,6 +39,8 @@ export default function Navbar() {
               className="md:hidden text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all duration-150 p-1 flex items-center justify-center cursor-pointer select-none"
             >
               <svg
+                width="20"
+                height="20"
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
@@ -105,6 +107,8 @@ export default function Navbar() {
               className="text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all p-1 flex items-center justify-center cursor-pointer select-none"
             >
               <svg
+                width="20"
+                height="20"
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
@@ -122,9 +126,12 @@ export default function Navbar() {
             <Link
               href="/cart"
               aria-label="Shopping bag"
+              style={{ color: "inherit" }}
               className="relative text-[var(--ink)] hover:text-[var(--muted)] active:scale-95 transition-all p-1 flex items-center justify-center select-none"
             >
               <svg
+                width="20"
+                height="20"
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"

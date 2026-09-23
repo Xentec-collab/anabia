@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import StoreLayoutShell from "@/components/StoreLayoutShell";
 import { Toaster } from "react-hot-toast";
-import "../styles/globals.css";
+import "@/styles/globals.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -39,12 +38,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
-      <body className="bg-[var(--bg)] text-[var(--ink)] antialiased selection:bg-[var(--line)]">
-        <Navbar />
-        <main className="w-full pt-14 bg-[var(--bg)] min-h-screen">
-          {children}
-        </main>
-        <Footer />
+      <body
+        className="bg-[var(--bg)] text-[var(--ink)] antialiased selection:bg-[var(--line)]"
+        style={{ backgroundColor: "#F9F8F6", color: "#1A1A1A" }}
+      >
+        <StoreLayoutShell>{children}</StoreLayoutShell>
         <Toaster
           position="bottom-center"
           toastOptions={{

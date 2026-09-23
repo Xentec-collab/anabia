@@ -37,13 +37,17 @@ function CartRowComponent({ item }: CartRowProps) {
     <article className="py-6 flex gap-6 items-center justify-between animate-fade-in">
       {/* Product Image & Details */}
       <div className="flex items-center gap-5 min-w-0">
-        <div className="w-[64px] h-[80px] flex-shrink-0 bg-[var(--ghost)] overflow-hidden border border-[var(--line)]/50 relative">
+        <div
+          className="w-[64px] h-[80px] flex-shrink-0 bg-[var(--ghost)] overflow-hidden border border-[var(--line)]/50 relative"
+          style={{ position: "relative", width: 64, height: 80, overflow: "hidden" }}
+        >
           <Image
             src={item.image_url}
             alt={item.name}
-            fill
-            sizes="64px"
-            className="object-cover object-center"
+            width={64}
+            height={80}
+            className="w-full h-full object-cover object-center"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </div>
 

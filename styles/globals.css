@@ -40,6 +40,18 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Defensive sizing to prevent FOUC / viewport blowout before Tailwind evaluates */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+svg:not([width]) {
+  width: 20px;
+  height: 20px;
+}
+
 /* Eliminate tap delays on all interactive elements */
 button,
 a,

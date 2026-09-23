@@ -4,6 +4,8 @@ import type { Product, DatabaseProduct } from "@/lib/supabase";
 import { createServerClient } from "@/lib/supabase";
 import { DEMO_PRODUCTS } from "@/lib/demoProducts";
 
+import { resolveDirectImageUrl } from "@/lib/resolveImageUrl";
+
 // Incremental Static Regeneration: cache page at edge and revalidate every 60 seconds
 export const revalidate = 60;
 
@@ -16,18 +18,26 @@ async function getProducts(): Promise<Product[]> {
       .order("created_at", { ascending: true });
 
     if (!error && data && data.length > 0) {
-      return (data as DatabaseProduct[]).map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: `₹${Math.round(item.price / 100).toLocaleString("en-IN")}`,
-        price_in_paise: item.price,
-        category: item.category,
-        image_url: item.image_url || "",
-        stock: item.stock,
-        specs: (item as any).specs,
-        description: (item as any).description,
-        created_at: item.created_at,
-      }));
+      return Promise.all(
+        (data as DatabaseProduct[]).map(async (item) => {
+          let cleanUrl = item.image_url || "";
+          if (cleanUrl.includes("ibb.co") && !cleanUrl.includes("i.ibb.co")) {
+            cleanUrl = await resolveDirectImageUrl(cleanUrl);
+          }
+          return {
+            id: item.id,
+            name: item.name,
+            price: `₹${Math.round(item.price / 100).toLocaleString("en-IN")}`,
+            price_in_paise: item.price,
+            category: item.category,
+            image_url: cleanUrl,
+            stock: item.stock,
+            specs: (item as any).specs,
+            description: (item as any).description,
+            created_at: item.created_at,
+          };
+        })
+      );
     }
   } catch (err) {
     console.error("Failed to load products from database:", err);

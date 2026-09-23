@@ -22,6 +22,8 @@ export async function generateStaticParams() {
   return DEMO_PRODUCTS.map((p) => ({ id: p.id }));
 }
 
+import { resolveDirectImageUrl } from "@/lib/resolveImageUrl";
+
 // React cache() deduplicates getProduct between generateMetadata and ProductDetailPage
 const getProduct = cache(async (id: string): Promise<Product | null> => {
   try {
@@ -35,13 +37,17 @@ const getProduct = cache(async (id: string): Promise<Product | null> => {
     if (!error && data) {
       const item = data as DatabaseProduct & { description?: string; specs?: string };
       const rupees = Math.round(item.price / 100);
+      let cleanUrl = item.image_url || "";
+      if (cleanUrl.includes("ibb.co") && !cleanUrl.includes("i.ibb.co")) {
+        cleanUrl = await resolveDirectImageUrl(cleanUrl);
+      }
       return {
         id: item.id,
         name: item.name,
         price: `₹${rupees.toLocaleString("en-IN")}`,
         price_in_paise: item.price,
         category: item.category,
-        image_url: item.image_url || "",
+        image_url: cleanUrl,
         stock: item.stock,
         specs: item.specs,
         description: item.description,

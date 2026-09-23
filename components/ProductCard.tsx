@@ -74,7 +74,10 @@ export default function ProductCard(props: ProductCardProps) {
   return (
     <article className="flex flex-col group">
       {/* 4:5 Aspect Frame */}
-      <div className="aspect-[4/5] w-full bg-[#F2F1EF] overflow-hidden relative flex items-center justify-center rounded-none">
+      <div
+        className="aspect-[4/5] w-full bg-[#F2F1EF] overflow-hidden relative flex items-center justify-center rounded-none"
+        style={{ position: "relative", aspectRatio: "4/5", width: "100%", overflow: "hidden" }}
+      >
         <Link
           href={`/product/${id}`}
           prefetch={false}
@@ -108,11 +111,13 @@ export default function ProductCard(props: ProductCardProps) {
           </span>
         )}
 
-        {/* Out of Stock Badge */}
+        {/* Out of Stock Bottom Pill */}
         {isOutOfStock && (
-          <span className="absolute top-3 left-3 z-10 pointer-events-none px-2 py-0.5 bg-red-50 text-red-600 text-[11px] font-medium border border-red-200">
-            Out of stock
-          </span>
+          <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center pointer-events-none">
+            <span className="px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-[12px] font-normal tracking-wide rounded-full">
+              Out of stock
+            </span>
+          </div>
         )}
 
         {/* Hover "Add to cart" Button */}

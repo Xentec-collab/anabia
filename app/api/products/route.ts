@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, type DatabaseProduct, type Product } from "@/lib/supabase";
+import { resolveDirectImageUrl } from "@/lib/resolveImageUrl";
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,21 +37,27 @@ export async function GET(request: NextRequest) {
     }
 
     // Format price from paise (e.g. 280000) to string "₹2,800"
-    const formattedProducts: Product[] = (data as DatabaseProduct[]).map((item) => {
-      const rupees = Math.round(item.price / 100);
-      return {
-        id: item.id,
-        name: item.name,
-        price: `₹${rupees.toLocaleString("en-IN")}`,
-        price_in_paise: item.price,
-        category: item.category,
-        image_url: item.image_url || "",
-        stock: item.stock,
-        specs: (item as any).specs,
-        description: (item as any).description,
-        created_at: item.created_at,
-      };
-    });
+    const formattedProducts: Product[] = await Promise.all(
+      (data as DatabaseProduct[]).map(async (item) => {
+        const rupees = Math.round(item.price / 100);
+        let cleanUrl = item.image_url || "";
+        if (cleanUrl.includes("ibb.co") && !cleanUrl.includes("i.ibb.co")) {
+          cleanUrl = await resolveDirectImageUrl(cleanUrl);
+        }
+        return {
+          id: item.id,
+          name: item.name,
+          price: `₹${rupees.toLocaleString("en-IN")}`,
+          price_in_paise: item.price,
+          category: item.category,
+          image_url: cleanUrl,
+          stock: item.stock,
+          specs: (item as any).specs,
+          description: (item as any).description,
+          created_at: item.created_at,
+        };
+      })
+    );
 
     const cacheHeader = search
       ? "public, s-maxage=30, stale-while-revalidate=120"
