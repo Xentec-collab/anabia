@@ -39,9 +39,9 @@ export default function ProductCard(props: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [fallbackDirect, setFallbackDirect] = useState(false);
 
-  // Directly load images from external CDNs (like ImgBB) without serverless proxy delay
+  // Directly load images from external CDNs (like Cloudinary, ImgBB) without serverless proxy delay
   const isDirectCdn = Boolean(
-    image_url && (image_url.includes("ibb.co") || image_url.includes("googleusercontent.com"))
+    image_url && (image_url.includes("cloudinary.com") || image_url.includes("ibb.co") || image_url.includes("googleusercontent.com"))
   );
 
   const handleImageError = () => {

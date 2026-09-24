@@ -21,9 +21,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [added, setAdded] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
 
-  // Directly load images from external CDNs (like ImgBB) without serverless proxy delay
+  // Directly load images from external CDNs (like Cloudinary, ImgBB) without serverless proxy delay
   const isDirectCdn = Boolean(
-    product.image_url && (product.image_url.includes("ibb.co") || product.image_url.includes("googleusercontent.com"))
+    product.image_url && (product.image_url.includes("cloudinary.com") || product.image_url.includes("ibb.co") || product.image_url.includes("googleusercontent.com"))
   );
 
   const handleImageError = () => {

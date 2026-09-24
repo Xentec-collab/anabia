@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,49 +53,107 @@ export default function ProductForm({
 
   const [saving, setSaving] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
-  const [resolvingImage, setResolvingImage] = useState(false);
   const [imagePreviewError, setImagePreviewError] = useState(false);
 
-  const resolveImg = async (urlToResolve: string) => {
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ─── Image Upload ───────────────────────────────────────
+  const uploadFile = useCallback(async (file: File) => {
+    // Client-side validation
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Only JPEG, PNG, WebP, AVIF, and GIF files are allowed.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max: 10 MB`);
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(10);
+    const toastId = "upload-img";
+    toast.loading("Uploading image...", { id: toastId });
+
     try {
-      setResolvingImage(true);
-      toast.loading("Converting ImgBB link to direct image...", { id: "resolve-img" });
-      const res = await fetch(`/api/admin/resolve-image?url=${encodeURIComponent(urlToResolve)}`);
-      const data = await res.json();
-      if (data.directUrl && data.directUrl !== urlToResolve) {
-        setFormData((prev) => ({ ...prev, image_url: data.directUrl }));
-        setImagePreviewError(false);
-        toast.success("Converted to direct image file!", { id: "resolve-img" });
-      } else {
-        toast.dismiss("resolve-img");
+      const body = new FormData();
+      body.append("file", file);
+
+      // Simulate progress while waiting for fetch
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => Math.min(prev + 8, 85));
+      }, 300);
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body,
+      });
+
+      clearInterval(progressInterval);
+      setUploadProgress(90);
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Upload failed (${res.status})`);
       }
-    } catch {
-      toast.dismiss("resolve-img");
+
+      const data = await res.json();
+      setUploadProgress(100);
+
+      setFormData((prev) => ({ ...prev, image_url: data.url }));
+      setImagePreviewError(false);
+
+      toast.success("Image uploaded!", { id: toastId });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      toast.error(msg, { id: toastId });
     } finally {
-      setResolvingImage(false);
+      setUploading(false);
+      setTimeout(() => setUploadProgress(0), 500);
     }
+  }, []);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(file);
+    // Reset so the same file can be re-selected
+    e.target.value = "";
   };
 
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragOver(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) uploadFile(file);
+    },
+    [uploadFile]
+  );
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+  };
+
+  // ─── Manual URL paste (backward compatible) ─────────────
   const handleImageUrlChange = (val: string) => {
-    let cleanVal = val.trim();
-
-    // If user pasted embed code like <img src="https://i.ibb.co/..." /> or [img]https://i.ibb.co/...[/img]
-    const embedMatch = cleanVal.match(/https?:\/\/i\.ibb\.co\/[^\s"'<>\)\]]+/i);
-    if (embedMatch) {
-      cleanVal = embedMatch[0];
-      toast.success("Direct image link extracted!", { id: "resolve-img" });
-    }
-
-    setFormData((prev) => ({ ...prev, image_url: cleanVal }));
+    setFormData((prev) => ({ ...prev, image_url: val.trim() }));
     setImagePreviewError(false);
-
-    // If it's an ibb.co viewer link (e.g. https://ibb.co/fGTVjCN8), auto-resolve immediately
-    const ibbMatch = cleanVal.match(/https?:\/\/ibb\.co\/([a-zA-Z0-9_-]+)/i);
-    if (ibbMatch && !cleanVal.includes("i.ibb.co")) {
-      resolveImg(ibbMatch[0]);
-    }
   };
 
+  // ─── Form Submit ────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setInlineError(null);
@@ -116,30 +174,6 @@ export default function ProductForm({
     if (isNaN(numStock) || numStock < 0) {
       setInlineError("Stock must be 0 or a positive integer.");
       return;
-    }
-
-    let finalImageUrl = formData.image_url.trim();
-
-    // Extract i.ibb.co if embedded
-    const embedMatch = finalImageUrl.match(/https?:\/\/i\.ibb\.co\/[^\s"'<>\)\]]+/i);
-    if (embedMatch) {
-      finalImageUrl = embedMatch[0];
-    }
-
-    // Auto-resolve if still ibb.co viewer link
-    if (finalImageUrl.match(/https?:\/\/ibb\.co\/([a-zA-Z0-9_-]+)/i) && !finalImageUrl.includes("i.ibb.co")) {
-      try {
-        setResolvingImage(true);
-        const res = await fetch(`/api/admin/resolve-image?url=${encodeURIComponent(finalImageUrl)}`);
-        const data = await res.json();
-        if (data.directUrl) {
-          finalImageUrl = data.directUrl;
-        }
-      } catch {
-        // Fallback: backend route also runs resolveDirectImageUrl
-      } finally {
-        setResolvingImage(false);
-      }
     }
 
     setSaving(true);
@@ -299,59 +333,97 @@ export default function ProductForm({
               className="w-full h-11 px-3.5 bg-white border border-[#E5E4E0] text-[13px] text-[#1A1A1A] placeholder:text-[#B0AEA8] focus:outline-none focus:border-[#1A1A1A] rounded-none transition-colors sm:w-48"
             />
             <p className="text-[11px] text-[#8A8780] mt-1">
-              If 0, card displays "Out of stock" and customers can request restock alerts.
+              If 0, card displays &quot;Out of stock&quot; and customers can request restock alerts.
             </p>
           </div>
 
-          {/* Image URL */}
+          {/* ─── Product Image ─────────────────────────────── */}
           <div>
             <label className="block text-[11px] uppercase tracking-wider text-[#8A8780] mb-1.5 font-medium">
-              Image URL
+              Product Image
             </label>
+
+            {/* Upload Drop Zone */}
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              className={`relative border-2 border-dashed transition-colors p-6 text-center cursor-pointer ${
+                dragOver
+                  ? "border-[#1A1A1A] bg-[#F9F8F6]"
+                  : "border-[#D5D4D0] bg-white hover:border-[#8A8780]"
+              } ${uploading ? "pointer-events-none opacity-70" : ""}`}
+              onClick={() => !uploading && fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              {uploading ? (
+                <div className="space-y-3">
+                  <div className="flex justify-center">
+                    <svg className="w-8 h-8 text-[#8A8780] animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="31.4" strokeDashoffset="10" />
+                    </svg>
+                  </div>
+                  <p className="text-[13px] text-[#8A8780]">
+                    Uploading... {uploadProgress}%
+                  </p>
+                  <div className="w-48 mx-auto h-1.5 bg-[#E5E4E0] overflow-hidden">
+                    <div
+                      className="h-full bg-[#1A1A1A] transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Upload Icon */}
+                  <div className="flex justify-center">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8A8780" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </div>
+                  <p className="text-[13px] text-[#1A1A1A] font-medium">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-[11px] text-[#8A8780]">
+                    JPEG, PNG, WebP, AVIF or GIF · Max 10 MB
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Upload progress bar */}
+            {uploading && uploadProgress > 0 && (
+              <div className="mt-1" />
+            )}
+
+            {/* OR divider */}
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 h-[1px] bg-[#E5E4E0]" />
+              <span className="text-[11px] text-[#8A8780] uppercase tracking-wider font-medium">
+                or paste URL
+              </span>
+              <div className="flex-1 h-[1px] bg-[#E5E4E0]" />
+            </div>
+
+            {/* Manual URL input */}
             <input
               type="text"
               value={formData.image_url}
               onChange={(e) => handleImageUrlChange(e.target.value)}
-              placeholder="Paste any ImgBB link, embed code, or image URL"
+              placeholder="https://res.cloudinary.com/... or any image URL"
               className="w-full h-11 px-3.5 bg-white border border-[#E5E4E0] text-[13px] text-[#1A1A1A] placeholder:text-[#B0AEA8] focus:outline-none focus:border-[#1A1A1A] rounded-none transition-colors font-mono"
             />
 
-            {resolvingImage && (
-              <p className="mt-2 text-[12px] text-amber-700 flex items-center gap-1.5 animate-pulse">
-                <span>🔄</span>
-                <span>Auto-converting ImgBB link into direct image file...</span>
-              </p>
-            )}
-
-            <div className="mt-2.5 p-3.5 bg-[#F9F8F6] border border-[#E5E4E0] text-[12px] text-[#66645E] space-y-2 leading-relaxed">
-              <p className="font-semibold text-[#1A1A1A]">
-                📸 Adding photos from ImgBB (Free, No account needed):
-              </p>
-              <ul className="space-y-1.5 text-[#4A4843]">
-                <li className="flex items-start gap-1.5">
-                  <span className="font-bold text-emerald-700">✓ Option 1 (Easiest):</span>
-                  <span>Paste the default <code>https://ibb.co/...</code> link — Anabia automatically converts it into the real photo file!</span>
-                </li>
-                <li className="flex items-start gap-1.5">
-                  <span className="font-bold text-emerald-700">✓ Option 2:</span>
-                  <span>Right-click your uploaded photo on ImgBB and click <strong>"Copy image address"</strong> (or "Copy image link"), then paste here.</span>
-                </li>
-                <li className="flex items-start gap-1.5">
-                  <span className="font-bold text-emerald-700">✓ Option 3:</span>
-                  <span>From the ImgBB dropdown, select <strong>"HTML full linked"</strong> and paste the whole code — we extract the image link automatically!</span>
-                </li>
-              </ul>
-              <div className="pt-1">
-                <Link
-                  href="/admin/help"
-                  className="text-[#1A1A1A] underline underline-offset-2 font-medium"
-                >
-                  View Step-by-Step Upload Guide →
-                </Link>
-              </div>
-            </div>
-
-            {/* Optional Image Preview */}
+            {/* Image Preview */}
             {formData.image_url && !imagePreviewError && (
               <div className="mt-3 flex items-center gap-3 p-3 bg-[#F9F8F6] border border-[#E5E4E0]">
                 <div
@@ -369,9 +441,37 @@ export default function ProductForm({
                     onError={() => setImagePreviewError(true)}
                   />
                 </div>
-                <div className="text-[11px] text-[#8A8780] truncate max-w-xs sm:max-w-md">
-                  {resolvingImage ? "Converting link..." : "Preview loaded"}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-emerald-700 font-medium">
+                    ✓ Preview loaded
+                  </p>
+                  <p className="text-[10px] text-[#8A8780] truncate mt-0.5">
+                    {formData.image_url}
+                  </p>
                 </div>
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({ ...prev, image_url: "" }));
+                    setImagePreviewError(false);
+                  }}
+                  className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-[#8A8780] hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Remove image"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Image preview error */}
+            {formData.image_url && imagePreviewError && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 text-[12px] text-red-700 flex items-center gap-2">
+                <span>⚠️</span>
+                <span>Could not load preview. The URL may be invalid or inaccessible.</span>
               </div>
             )}
           </div>
@@ -402,7 +502,7 @@ export default function ProductForm({
             </Link>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploading}
               className="h-11 px-6 bg-[#1A1A1A] text-white text-[13px] font-medium uppercase tracking-wider hover:bg-black active:scale-[0.98] transition-all rounded-none cursor-pointer disabled:opacity-60"
             >
               {saving

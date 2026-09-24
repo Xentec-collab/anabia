@@ -13,7 +13,7 @@ interface CartRowProps {
 function CartRowComponent({ item }: CartRowProps) {
   const [imageError, setImageError] = useState(false);
   const isDirectCdn = Boolean(
-    item.image_url && (item.image_url.includes("ibb.co") || item.image_url.includes("googleusercontent.com"))
+    item.image_url && (item.image_url.includes("cloudinary.com") || item.image_url.includes("ibb.co") || item.image_url.includes("googleusercontent.com"))
   );
 
   const updateQty = useCartStore((state) => state.updateQty);
