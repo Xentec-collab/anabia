@@ -1,6 +1,16 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/adminAuth";
 
-export default function AdminHelpPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminHelpPage() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  if (!(await verifyAdminSession(session))) {
+    redirect("/admin");
+  }
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Breadcrumb */}

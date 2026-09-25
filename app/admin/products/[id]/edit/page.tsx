@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/adminAuth";
 import { createServerClient } from "@/lib/supabase";
-import { DEMO_PRODUCTS } from "@/lib/demoProducts";
 import ProductForm from "@/components/admin/ProductForm";
 
 interface EditProductPageProps {
@@ -9,9 +10,19 @@ interface EditProductPageProps {
 
 export const dynamic = "force-dynamic";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function EditProductPage({ params }: EditProductPageProps) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  if (!(await verifyAdminSession(session))) {
+    redirect("/admin");
+  }
+
   const { id } = await params;
-  if (!id) notFound();
+  if (!id || !UUID_REGEX.test(id)) {
+    notFound();
+  }
 
   let product = null;
 
@@ -28,26 +39,6 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     }
   } catch (err) {
     console.error("Error fetching product for edit:", err);
-  }
-
-  // Fallback: check DEMO_PRODUCTS if not found in DB
-  if (!product) {
-    const demo = DEMO_PRODUCTS.find((p) => p.id === id);
-    if (demo) {
-      const numericPrice =
-        typeof demo.price === "number"
-          ? demo.price
-          : parseInt(String(demo.price).replace(/[^\d]/g, ""), 10) || 0;
-      product = {
-        id: demo.id,
-        name: demo.name,
-        price: demo.price_in_paise || numericPrice * 100,
-        category: demo.category,
-        image_url: demo.image_url,
-        stock: demo.stock ?? 10,
-        description: demo.description,
-      };
-    }
   }
 
   if (!product) {

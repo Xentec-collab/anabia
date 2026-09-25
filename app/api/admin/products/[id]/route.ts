@@ -30,10 +30,30 @@ export async function PUT(request: NextRequest, { params }: RouteProps) {
     const body = await request.json().catch(() => ({}));
     const { name, price, category, stock, description, image_url } = body;
 
-    // Validation
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
         { error: "Product name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (name.trim().length > 150) {
+      return NextResponse.json(
+        { error: "Product name cannot exceed 150 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (description && typeof description === "string" && description.length > 5000) {
+      return NextResponse.json(
+        { error: "Description cannot exceed 5,000 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (image_url && typeof image_url === "string" && image_url.length > 1000) {
+      return NextResponse.json(
+        { error: "Image URL cannot exceed 1,000 characters" },
         { status: 400 }
       );
     }

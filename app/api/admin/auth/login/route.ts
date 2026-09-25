@@ -5,9 +5,34 @@ import {
   verifyAdminPassword,
   getExpectedAdminToken,
 } from "@/lib/adminAuth";
+import { adminLoginRateLimiter, getClientIp, checkRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Rate limiting: max 5 login attempts per IP per 15 minutes
+    const clientIp = getClientIp(request);
+    const rateLimit = await checkRateLimit(
+      adminLoginRateLimiter,
+      `admin_login:${clientIp}`
+    );
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "Too many login attempts. Please wait 15 minutes before trying again.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": "900",
+            "X-RateLimit-Limit": String(rateLimit.limit),
+            "X-RateLimit-Remaining": String(rateLimit.remaining),
+            "X-RateLimit-Reset": String(rateLimit.reset),
+          },
+        }
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const { password } = body;
 
@@ -19,6 +44,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!verifyAdminPassword(password)) {
+      // Artificial delay to mitigate high-speed brute force
+      await new Promise((resolve) => setTimeout(resolve, 350));
       return NextResponse.json(
         { error: "Incorrect password" },
         { status: 401 }
@@ -41,8 +68,9 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error: unknown) {
     console.error("Admin login error:", error);
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: msg },
       { status: 500 }
     );
   }

@@ -42,6 +42,15 @@ export const quotesRateLimiter = redis
     })
   : null;
 
+// Admin Login: 5 attempts per IP per 15 minutes to prevent brute-force attacks
+export const adminLoginRateLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, "15 m"),
+      prefix: "anabia:ratelimit:admin-login",
+    })
+  : null;
+
 /**
  * Extract client IP address from Next.js request headers
  */

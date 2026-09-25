@@ -22,6 +22,11 @@ const securityHeaders = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
+  {
+    key: "Content-Security-Policy",
+    value:
+      "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://res.cloudinary.com https://lh3.googleusercontent.com https://i.ibb.co https://ibb.co https://images.unsplash.com https://*.supabase.co; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co https://api.cloudinary.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+  },
 ];
 
 const nextConfig: NextConfig = {
