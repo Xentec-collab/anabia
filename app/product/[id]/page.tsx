@@ -16,16 +16,22 @@ export async function generateStaticParams() {
       return data.map((p) => ({ id: p.id }));
     }
   } catch (err) {
-    console.error("Static params generation fallback to DEMO_PRODUCTS:", err);
+    console.error("Static params generation error:", err);
   }
 
-  return DEMO_PRODUCTS.map((p) => ({ id: p.id }));
+  return [];
 }
 
 import { resolveDirectImageUrl } from "@/lib/resolveImageUrl";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // React cache() deduplicates getProduct between generateMetadata and ProductDetailPage
 const getProduct = cache(async (id: string): Promise<Product | null> => {
+  if (!UUID_REGEX.test(id)) {
+    return null;
+  }
+
   try {
     const supabase = createServerClient();
     const { data, error } = await supabase
@@ -58,12 +64,7 @@ const getProduct = cache(async (id: string): Promise<Product | null> => {
     console.error("Failed to fetch product:", err);
   }
 
-  // Fallback: check DEMO_PRODUCTS
-  const fallback = DEMO_PRODUCTS.find(
-    (p) => p.id === id || p.name.toLowerCase().replace(/\s+/g, "-") === id
-  );
-
-  return fallback ?? null;
+  return null;
 });
 
 export async function generateMetadata({

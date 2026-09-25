@@ -17,33 +17,36 @@ async function getProducts(): Promise<Product[]> {
       .select("*")
       .order("created_at", { ascending: true });
 
-    if (!error && data && data.length > 0) {
-      return Promise.all(
-        (data as DatabaseProduct[]).map(async (item) => {
-          let cleanUrl = item.image_url || "";
-          if (cleanUrl.includes("ibb.co") && !cleanUrl.includes("i.ibb.co")) {
-            cleanUrl = await resolveDirectImageUrl(cleanUrl);
-          }
-          return {
-            id: item.id,
-            name: item.name,
-            price: `₹${Math.round(item.price / 100).toLocaleString("en-IN")}`,
-            price_in_paise: item.price,
-            category: item.category,
-            image_url: cleanUrl,
-            stock: item.stock,
-            specs: (item as any).specs,
-            description: (item as any).description,
-            created_at: item.created_at,
-          };
-        })
-      );
+    if (!error && data) {
+      if (data.length > 0) {
+        return Promise.all(
+          (data as DatabaseProduct[]).map(async (item) => {
+            let cleanUrl = item.image_url || "";
+            if (cleanUrl.includes("ibb.co") && !cleanUrl.includes("i.ibb.co")) {
+              cleanUrl = await resolveDirectImageUrl(cleanUrl);
+            }
+            return {
+              id: item.id,
+              name: item.name,
+              price: `₹${Math.round(item.price / 100).toLocaleString("en-IN")}`,
+              price_in_paise: item.price,
+              category: item.category,
+              image_url: cleanUrl,
+              stock: item.stock,
+              specs: (item as any).specs,
+              description: (item as any).description,
+              created_at: item.created_at,
+            };
+          })
+        );
+      }
+      return [];
     }
   } catch (err) {
     console.error("Failed to load products from database:", err);
   }
 
-  return DEMO_PRODUCTS;
+  return [];
 }
 
 export default async function HomePage() {

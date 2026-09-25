@@ -31,7 +31,7 @@ export default async function AdminPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error && data && data.length > 0) {
+    if (!error && data) {
       products = await Promise.all(
         (data as AdminProductRow[]).map(async (item) => {
           if (
@@ -45,23 +45,6 @@ export default async function AdminPage() {
           return item;
         })
       );
-    } else {
-      // Fallback: convert DEMO_PRODUCTS for display if database is not yet populated
-      products = DEMO_PRODUCTS.map((p) => {
-        const numericPrice =
-          typeof p.price === "number"
-            ? p.price
-            : parseInt(String(p.price).replace(/[^\d]/g, ""), 10) || 0;
-        return {
-          id: p.id,
-          name: p.name,
-          price: p.price_in_paise || numericPrice * 100,
-          category: p.category,
-          image_url: p.image_url || null,
-          stock: p.stock ?? 10,
-          description: p.description,
-        };
-      });
     }
   } catch (err) {
     console.error("Error loading products in admin page:", err);

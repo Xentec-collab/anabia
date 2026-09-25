@@ -25,45 +25,14 @@ const computeItemCount = (items: CartItem[]): number => {
   return items.reduce((count, item) => count + item.quantity, 0);
 };
 
-const INITIAL_ITEMS: CartItem[] = [
-  {
-    id: "item-1",
-    name: "Linen overshirt",
-    category: "clothing",
-    price: 2800,
-    specs: "Natural oat, size M",
-    image_url:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDmX3KormHYbutSbXybG6ONE4M0iDUCls7UUyBzSuvWORWzah0BAMbQCGvJykJP44EeFz_hB_blSuH-UfA0tyyVbZ2rnuSQMKaIrNP4n0pun4dxGkgEhdn-Z2Yxv2FxK1XUzKTkTSjF9_2TeRbtmtWYKNm8JItLx4jxwTL3ORa0x694jbxIfAlkPThQak95Jfq2o5Ew3WQ2ymafraYu9ocmybedPpOPNvumcyGjkdxpNm91AfK8-1xn",
-    quantity: 1,
-  },
-  {
-    id: "item-2",
-    name: "Beeswax candle",
-    category: "home",
-    price: 650,
-    specs: "Standard 220g",
-    image_url:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAy0BGMO2GfrAJc0OKBbwyAFZUjYEjwAwwfCvcNUY_teM2kEbtW8Y-_LkqKodBGr3A63lPjOe0DWDi_jeVj3ecO4WFXjkLsPV-S0_tTXkn96EK6QIm5-NA8mcicnZxCakHXJFuBeJkivrjgKhkND6ekKbZShf4hf6lxpNKkLYYv7BtqlNAvZPzlbnQ_eoi-XqVriZIEtwSLA4RWE4LLxH5GWxsUZRc-_q4D8kDlpD6fvu_QTVlyxkRq",
-    quantity: 2,
-  },
-  {
-    id: "item-3",
-    name: "Brass bookmark",
-    category: "accessories",
-    price: 340,
-    specs: "Brushed finish",
-    image_url:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAZ9vWmVd0GKwdyRfzcuZgsbAGLkrUa8D8vCzozioMHD1vZJYNP5zgqZFAjnSFRju_XYK5M0O3e4WUekiRfPnsSmZL1CGwamsrV_NCAvZPZZV23qKmFYZh6PUTccUSlBi22I2LMbp3HDdL9sbt5ppvXu2PfmzUP4sntSD0pU0KI9pr-ZooIeivciThtFHvjlDs0yQIX06cQqlDgnVifZUwkULk4ocmFQZFP7TspxkCFf9PgB5SnUn_8",
-    quantity: 1,
-  },
-];
+const INITIAL_ITEMS: CartItem[] = [];
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: INITIAL_ITEMS,
-      total: computeTotal(INITIAL_ITEMS),
-      itemCount: computeItemCount(INITIAL_ITEMS),
+      total: 0,
+      itemCount: 0,
 
       addItem: (product, quantity = 1) => {
         const currentItems = get().items;

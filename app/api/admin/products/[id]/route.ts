@@ -22,6 +22,11 @@ export async function PUT(request: NextRequest, { params }: RouteProps) {
       return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
     }
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(id)) {
+      return NextResponse.json({ error: "Invalid product ID format" }, { status: 400 });
+    }
+
     const body = await request.json().catch(() => ({}));
     const { name, price, category, stock, description, image_url } = body;
 
@@ -110,6 +115,12 @@ export async function DELETE(request: NextRequest, { params }: RouteProps) {
     const { id } = await params;
     if (!id) {
       return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
+    }
+
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    // If it's not a valid UUID (e.g. legacy demo product "item-1"), it is not in the database anyway
+    if (!UUID_REGEX.test(id)) {
+      return NextResponse.json({ success: true, message: "Item removed" });
     }
 
     const supabase = createServerClient();
