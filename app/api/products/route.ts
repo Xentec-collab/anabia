@@ -22,11 +22,14 @@ export async function GET(request: NextRequest) {
       query = query.eq("category", category);
     }
 
-    // Search by name or description with PostgREST syntax injection sanitization
+    // Search by name or description with strict Unicode alphanumeric sanitization to prevent PostgREST syntax injection
     if (search && search.trim()) {
-      const sanitized = search.trim().replace(/[(),.*]/g, "");
+      const sanitized = search.trim().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, " ").trim();
       if (sanitized) {
         query = query.or(`name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
+      } else {
+        // If query was composed solely of stripped injection/symbol characters, return empty results immediately
+        return NextResponse.json([]);
       }
     }
 
