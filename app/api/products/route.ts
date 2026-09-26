@@ -22,13 +22,17 @@ export async function GET(request: NextRequest) {
       query = query.eq("category", category);
     }
 
-    // Search by name or description with strict Unicode alphanumeric sanitization to prevent PostgREST syntax injection
+    // Search by name, category, or description with smart length thresholds
     if (search && search.trim()) {
       const sanitized = search.trim().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, " ").trim();
       if (sanitized) {
-        query = query.or(`name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
+        // For short queries (< 3 chars), search only name and category to avoid false matches in long descriptions
+        if (sanitized.length < 3) {
+          query = query.or(`name.ilike.%${sanitized}%,category.ilike.%${sanitized}%`);
+        } else {
+          query = query.or(`name.ilike.%${sanitized}%,category.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
+        }
       } else {
-        // If query was composed solely of stripped injection/symbol characters, return empty results immediately
         return NextResponse.json([]);
       }
     }
@@ -40,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Format price from paise (e.g. 280000) to string "₹2,800"
-    const formattedProducts: Product[] = await Promise.all(
+    let formattedProducts: Product[] = await Promise.all(
       (data as DatabaseProduct[]).map(async (item) => {
         const rupees = Math.round(item.price / 100);
         let cleanUrl = item.image_url || "";
@@ -62,8 +66,29 @@ export async function GET(request: NextRequest) {
       })
     );
 
+    // Relevance sort: prioritize direct name matches at the top of results
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      formattedProducts.sort((a, b) => {
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        const aStarts = aName.startsWith(q);
+        const bStarts = bName.startsWith(q);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        const aIncludes = aName.includes(q);
+        const bIncludes = bName.includes(q);
+        if (aIncludes && !bIncludes) return -1;
+        if (!aIncludes && bIncludes) return 1;
+
+        return 0;
+      });
+    }
+
+    // Search results must never be cached on CDN/browser to avoid stale search race conditions
     const cacheHeader = search
-      ? "public, s-maxage=30, stale-while-revalidate=120"
+      ? "no-store, no-cache, must-revalidate, proxy-revalidate"
       : "public, s-maxage=300, stale-while-revalidate=86400";
 
     return NextResponse.json(formattedProducts, {

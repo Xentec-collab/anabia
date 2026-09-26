@@ -59,31 +59,49 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Fetch results
+  // Fetch results with race condition protection and abort controller
   useEffect(() => {
+    let isCurrent = true;
+    const controller = new AbortController();
+
     const fetchResults = async () => {
-      if (!debouncedQuery.trim()) {
+      const q = debouncedQuery.trim();
+      if (!q) {
         setResults([]);
         return;
       }
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/products?search=${encodeURIComponent(debouncedQuery)}`);
+        const res = await fetch(`/api/products?search=${encodeURIComponent(q)}`, {
+          signal: controller.signal,
+          headers: { "Cache-Control": "no-cache" },
+        });
         if (res.ok) {
           const data = await res.json();
-          setResults(data.products || data);
-        } else {
+          if (isCurrent) {
+            setResults(Array.isArray(data) ? data : (data.products || []));
+          }
+        } else if (isCurrent) {
           setResults([]);
         }
-      } catch (error) {
-        console.error("Error fetching search results:", error);
-        setResults([]);
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("Error fetching search results:", error);
+          if (isCurrent) setResults([]);
+        }
       } finally {
-        setIsLoading(false);
+        if (isCurrent) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchResults();
+
+    return () => {
+      isCurrent = false;
+      controller.abort();
+    };
   }, [debouncedQuery]);
 
   const handleResultClick = (id: string) => {
